@@ -1,0 +1,58 @@
+version: '3.7'
+
+services:
+    kittybot:
+        build: 
+            context: ../KittyBot
+            dockerfile: Dockerfile-dev
+        container_name: kittybot
+        restart: unless-stopped
+        labels:
+            - io.portainer.accesscontrol.teams=kittybot
+        command: tail -f /dev/null
+        volumes:
+            - ../KittyBot/:/home/kittybot/
+        networks:
+            - kittybot
+        expose:
+            - 6969
+    website:
+        build: 
+            context: ../KittyBot-Website
+            dockerfile: Dockerfile-dev
+        container_name: kittybot_website
+        restart: unless-stopped
+        labels:
+            - io.portainer.accesscontrol.teams=kittybot
+        command: tail -f /dev/null
+        volumes:
+            - ../KittyBot-Website/:/home/kittybot-website/
+        networks:
+            - kittybot
+        expose:
+            - 80
+        depends_on:
+            - kittybot
+    nginx:
+        image: nginx:latest
+        container_name: nginx
+        restart: unless-stopped
+        volumes:
+            - ./nginx.conf:/etc/nginx/nginx.conf:ro
+            - ./certs/localhost.crt:/etc/ssl/certs/localhost.crt:ro
+            - ./certs/localhost.key:/etc/ssl/certs/localhost.key:ro
+        depends_on: 
+            - kittybot
+            - website
+        networks:
+            - nginx
+            - kittybot
+        ports:
+            - 80:80
+            - 443:443
+
+networks:
+    kittybot:
+        name: kittybot
+    nginx:
+        name: nginx

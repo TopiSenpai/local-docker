@@ -1,0 +1,4 @@
+config.json
+certs/*.key
+certs/*.crt
+.data
